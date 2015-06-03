@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-type JsonConfig struct {
+type JsonExport struct {
 	// KV Path in Consul
 	Prefix string
 	// Place to put the config file
@@ -29,7 +29,7 @@ type JsonConfig struct {
 	currentJson []byte
 }
 
-func (c *JsonConfig) ParseFlags(args []string) {
+func (c *JsonExport) ParseFlags(args []string) {
 	flags := flag.NewFlagSet(Name, flag.ContinueOnError)
 
 	flags.StringVar(&c.Prefix, "prefix", "", "What KV prefix should I track?")
@@ -44,7 +44,7 @@ func (c *JsonConfig) ParseFlags(args []string) {
 
 }
 
-func (c *JsonConfig) getConsulToMap() (v map[string]interface{}) {
+func (c *JsonExport) getConsulToMap() (v map[string]interface{}) {
 	client, _ := api.NewClient(api.DefaultConfig())
 	kv := client.KV() // Lookup the pair
 
@@ -74,11 +74,11 @@ func (c *JsonConfig) getConsulToMap() (v map[string]interface{}) {
 	return
 }
 
-func (c *JsonConfig) fileNameWithTimestamp() string {
+func (c *JsonExport) fileNameWithTimestamp() string {
 	return fmt.Sprintf("%s.%d", c.ConfigFile, int32(time.Now().Unix()))
 }
 
-func (c *JsonConfig) WriteFile(newJson []byte) {
+func (c *JsonExport) WriteFile(newJson []byte) {
 	if bytes.Equal(c.currentJson, newJson) {
 		// File didn't change.
 		return
@@ -102,7 +102,7 @@ func (c *JsonConfig) WriteFile(newJson []byte) {
 	c.currentJson = newJson
 }
 
-func (c *JsonConfig) GenerateJson() []byte {
+func (c *JsonExport) GenerateJson() []byte {
 	consulMap := c.getConsulToMap()
 
 	js, err := json.Marshal(consulMap)
@@ -113,7 +113,7 @@ func (c *JsonConfig) GenerateJson() []byte {
 	return js
 }
 
-func (c *JsonConfig) Run() {
+func (c *JsonExport) Run() {
 	json := c.GenerateJson()
 
 	if c.ConfigFile == "" {
@@ -123,7 +123,7 @@ func (c *JsonConfig) Run() {
 	}
 }
 
-func (c *JsonConfig) RunWatcher() {
+func (c *JsonExport) RunWatcher() {
 	for {
 		fmt.Println("Waiting", time.Second*c.PollFrequency)
 		select {
