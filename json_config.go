@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/hashicorp/consul/api"
 	"io/ioutil"
@@ -26,6 +27,21 @@ type JsonConfig struct {
 	PollFrequency time.Duration
 
 	currentJson []byte
+}
+
+func (c *JsonConfig) ParseFlags(args []string) {
+	flags := flag.NewFlagSet(Name, flag.ContinueOnError)
+
+	flags.StringVar(&c.Prefix, "prefix", "", "What KV prefix should I track?")
+	flags.StringVar(&c.ConfigFile, "config", "", "Place to output the config file. Default is config.json")
+	flags.BoolVar(&c.Timestamp, "timestamp", false, "Should I create timestamped values of this")
+	flags.BoolVar(&c.Poll, "poll", false, "Should I poll for changes")
+
+	frequency := flags.Int("poll_frequency", 60, "How frequently should we poll the consul agent. In seconds")
+	c.PollFrequency = time.Duration(*frequency)
+
+	flags.Parse(os.Args[1:])
+
 }
 
 func (c *JsonConfig) getConsulToMap() (v map[string]interface{}) {
@@ -97,8 +113,8 @@ func (c *JsonConfig) GenerateJson() []byte {
 	return js
 }
 
-func (c *JsonConfig) Handler() {
-	json := config.GenerateJson()
+func (c *JsonConfig) Run() {
+	json := c.GenerateJson()
 
 	if c.ConfigFile == "" {
 		fmt.Println(string(json))
@@ -107,12 +123,12 @@ func (c *JsonConfig) Handler() {
 	}
 }
 
-func (c *JsonConfig) Poller() {
+func (c *JsonConfig) RunWatcher() {
 	for {
 		fmt.Println("Waiting", time.Second*c.PollFrequency)
 		select {
 		case <-time.After(time.Second * c.PollFrequency):
-			c.Handler()
+			c.Run()
 		}
 	}
 }
