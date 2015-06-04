@@ -30,7 +30,6 @@ type JsonExport struct {
 }
 
 func (c *JsonExport) ParseFlags(args []string) {
-
 	flags := flag.NewFlagSet(Name, flag.ContinueOnError)
 
 	flags.StringVar(&c.Prefix, "prefix", "", "What KV prefix should I track?")
@@ -41,8 +40,7 @@ func (c *JsonExport) ParseFlags(args []string) {
 	frequency := flags.Int("poll-frequency", 60, "How frequently should we poll the consul agent. In seconds")
 	c.PollFrequency = time.Duration(*frequency)
 
-	flags.Parse(os.Args[1:])
-
+	flags.Parse(args)
 }
 
 func (c *JsonExport) getConsulToMap() (v map[string]interface{}) {

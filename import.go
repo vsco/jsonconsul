@@ -63,7 +63,7 @@ func (ji *JsonImport) prefixedKey(key string) (newKey string) {
 	if ji.Prefix == "" {
 		newKey = key
 	} else {
-		newKey = fmt.Sprintf("%s/%s", ji.Prefix, key)
+		newKey = fmt.Sprintf("%s/%s", ji.Prefix, strings.TrimPrefix(key, "/"))
 	}
 
 	newKey = strings.TrimPrefix(newKey, "/")
@@ -76,7 +76,6 @@ func (ji *JsonImport) setConsulValues() {
 	kv := client.KV() // Lookup the pair
 
 	for k, v := range ji.flattened {
-		fmt.Println(k)
 		p := &api.KVPair{
 			Key:   ji.prefixedKey(k),
 			Value: []byte(v),
