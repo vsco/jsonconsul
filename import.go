@@ -2,25 +2,35 @@ package main
 
 import (
 	"encoding/json"
-	//	"flag"
+	"flag"
 	"fmt"
-	"io/ioutil"
-	//	"os"
 	"github.com/hashicorp/consul/api"
+	"io/ioutil"
+	"os"
+	"strings"
 )
 
 type JsonImport struct {
 	// Prefix to load the config under. If empty then loads to the
 	// root kv node.
 	Prefix string
-	// File containing the Json
+	// File containing the Json to be converted to KVs.
 	Filename string
 
 	flattened map[string]string
 }
 
 func (ji *JsonImport) ParseFlags(args []string) {
+	flags := flag.NewFlagSet(Name, flag.ContinueOnError)
 
+	flags.StringVar(&ji.Prefix, "prefix", "", "What prefix should the Key Values be stored under.")
+	flags.StringVar(&ji.Filename, "json-file", "", "Json file that will be imported into Consul.")
+	flags.Parse(args)
+
+	if ji.Filename == "" {
+		fmt.Println("Include filename with -json-file")
+		os.Exit(-1)
+	}
 }
 
 func (ji *JsonImport) keysFromJson(nested interface{}, prefix string) {
@@ -49,8 +59,16 @@ func (ji *JsonImport) readFile() (unmarshalled map[string]interface{}) {
 	return
 }
 
-func (ji *JsonImport) prefixedKey(key string) string {
-	return fmt.Sprintf("%s/%s", ji.Prefix, key)
+func (ji *JsonImport) prefixedKey(key string) (newKey string) {
+	if ji.Prefix == "" {
+		newKey = key
+	} else {
+		newKey = fmt.Sprintf("%s/%s", ji.Prefix, key)
+	}
+
+	newKey = strings.TrimPrefix(newKey, "/")
+
+	return
 }
 
 func (ji *JsonImport) setConsulValues() {
@@ -58,6 +76,7 @@ func (ji *JsonImport) setConsulValues() {
 	kv := client.KV() // Lookup the pair
 
 	for k, v := range ji.flattened {
+		fmt.Println(k)
 		p := &api.KVPair{
 			Key:   ji.prefixedKey(k),
 			Value: []byte(v),

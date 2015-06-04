@@ -19,7 +19,6 @@ Mode:
 )
 
 func showUsage() {
-
 	fmt.Printf(usage, Name)
 }
 
@@ -32,13 +31,15 @@ func main() {
 	switch os.Args[1] {
 	case "watch":
 		jsonExport := &JsonExport{}
+		jsonExport.ParseFlags(os.Args[2:])
 		jsonExport.RunWatcher()
 	case "export":
 		jsonExport := &JsonExport{}
+		jsonExport.ParseFlags(os.Args[2:])
 		jsonExport.Run()
 	case "import":
 		jsonImport := &JsonImport{}
-		jsonImport.ParseFlags(os.Args[1:])
+		jsonImport.ParseFlags(os.Args[2:])
 		jsonImport.Run()
 	default:
 		showUsage()
