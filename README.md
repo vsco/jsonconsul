@@ -1,12 +1,8 @@
 # jsonconsul
 
-A tool to make config files from Key Values in Consul.
-
-## Description
-
 `jsonconsul` allows the creation of json files from the values that
-are located in Consul. This allows applications that are configured
-via JSON to be able to read the values.
+are located in Consul. It also contains the ability to import KV keys
+into Consul.
 
 ## Usage
 
