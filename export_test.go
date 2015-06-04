@@ -19,10 +19,10 @@ func SetupKeys() {
 
 }
 
-func TestJsonConfig_Generate(t *testing.T) {
+func TestJsonExport_Generate(t *testing.T) {
 	SetupKeys()
 
-	config := &JsonConfig{
+	config := &JsonExport{
 		Prefix: "foo",
 	}
 	config.GenerateJson()
