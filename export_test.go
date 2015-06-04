@@ -2,10 +2,9 @@ package main
 
 import (
 	"github.com/hashicorp/consul/api"
-	"testing"
 )
 
-func SetupKeys() {
+func ExampleJsonExport_Run() {
 	client, _ := api.NewClient(api.DefaultConfig())
 	kv := client.KV() // Lookup the pair
 
@@ -17,15 +16,10 @@ func SetupKeys() {
 		}
 	}
 
-}
-
-func TestJsonExport_Generate(t *testing.T) {
-	SetupKeys()
-
 	config := &JsonExport{
 		Prefix: "foo",
 	}
-	config.GenerateJson()
+	config.Run()
 
 	// Output:
 	// {"foo":{"bar":"test","blah":"test","do":"test","loud":{"asd":{"bah":"test"}}}}
