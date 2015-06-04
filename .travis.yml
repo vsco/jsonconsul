@@ -10,6 +10,6 @@ before_script:
   - ./consul --version
 
 script:
-  - ../consul agent -server -bootstrap-expect 1 -data-dir /tmp/consul &
+  - ./consul agent -server -bootstrap-expect 1 -data-dir /tmp/consul &
   - go get golang.org/x/tools/cmd/cover
   - go test -cover
