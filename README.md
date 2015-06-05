@@ -1,5 +1,7 @@
 # jsonconsul
 
+[![Build Status](https://travis-ci.org/vsco/jsonconsul.svg)](https://travis-ci.org/vsco/jsonconsul)
+
 `jsonconsul` allows the creation of json files from the values that
 are located in Consul. It also contains the ability to import KV keys
 into Consul.
