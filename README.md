@@ -71,3 +71,10 @@ json. If an alternate frequency is preferred then include the
 ```sh
 jsonconsul watch -prefix="foo" -config=foo.json -timestamp -poll
 ```
+
+#### License
+Copyright (c) 2015, VSCO. All rights reserved.
+
+Licensed under an MIT license: https://github.com/vsco/jsonconsul/blob/master/LICENSE
+
+
