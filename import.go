@@ -89,9 +89,10 @@ func (ji *JsonImport) setConsulValues() {
 }
 
 func (ji *JsonImport) Run() {
+	ji.FlattenedKVs = make(map[string]string)
+
 	unmarshalled := ji.readFile()
 
-	ji.FlattenedKVs = make(map[string]string)
 	ji.keysFromJson(unmarshalled, "")
 	ji.setConsulValues()
 }
