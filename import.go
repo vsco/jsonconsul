@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/hashicorp/consul/api"
 	"io/ioutil"
 	"os"
-	"strings"
 )
 
 type JsonImport struct {
@@ -33,18 +31,6 @@ func (ji *JsonImport) ParseFlags(args []string) {
 	}
 }
 
-func (ji *JsonImport) keysFromJson(nested interface{}, prefix string) {
-	for k, v := range nested.(map[string]interface{}) {
-		newPrefix := fmt.Sprintf("%s/%s", prefix, k)
-		switch v.(type) {
-		case string:
-			ji.FlattenedKVs[newPrefix] = v.(string)
-		case interface{}:
-			ji.keysFromJson(v, newPrefix)
-		}
-	}
-}
-
 func (ji *JsonImport) readFile() (unmarshalled map[string]interface{}) {
 	fileOutput, err := ioutil.ReadFile(ji.Filename)
 	if err != nil {
@@ -59,40 +45,10 @@ func (ji *JsonImport) readFile() (unmarshalled map[string]interface{}) {
 	return
 }
 
-func (ji *JsonImport) prefixedKey(key string) (newKey string) {
-	if ji.Prefix == "" {
-		newKey = key
-	} else {
-		newKey = fmt.Sprintf("%s/%s", ji.Prefix, strings.TrimPrefix(key, "/"))
-	}
-
-	newKey = strings.TrimPrefix(newKey, "/")
-
-	return
-}
-
-func (ji *JsonImport) setConsulValues() {
-	client, _ := api.NewClient(api.DefaultConfig())
-	kv := client.KV() // Lookup the pair
-
-	for k, v := range ji.FlattenedKVs {
-		p := &api.KVPair{
-			Key:   ji.prefixedKey(k),
-			Value: []byte(v),
-		}
-
-		_, err := kv.Put(p, nil)
-		if err != nil {
-			panic(err)
-		}
-	}
-}
-
 func (ji *JsonImport) Run() {
 	ji.FlattenedKVs = make(map[string]string)
-
 	unmarshalled := ji.readFile()
 
-	ji.keysFromJson(unmarshalled, "")
-	ji.setConsulValues()
+	interfaceToConsulFlattenedMap(unmarshalled, "", ji.FlattenedKVs)
+	setConsulKVs(ji.Prefix, ji.FlattenedKVs)
 }
