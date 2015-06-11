@@ -22,13 +22,13 @@ func interfaceToConsulFlattenedMap(nested interface{}, prefix string, output map
 
 func consulToFlattenedMap(prefix string) map[string]string {
 	output := make(map[string]string)
-	nested := consulToNestedMap(prefix)
+	nested := consulToNestedMap(prefix, true)
 	interfaceToConsulFlattenedMap(nested, prefix, output)
 
 	return output
 }
 
-func consulToNestedMap(prefix string) (v map[string]interface{}) {
+func consulToNestedMap(prefix string, includePrefix bool) (v map[string]interface{}) {
 	client, _ := api.NewClient(api.DefaultConfig())
 	kv := client.KV() // Lookup the pair
 
@@ -51,6 +51,16 @@ func consulToNestedMap(prefix string) (v map[string]interface{}) {
 					keyIter[key] = make(map[string]interface{})
 				}
 				keyIter = keyIter[key].(map[string]interface{})
+			}
+		}
+	}
+
+	if !includePrefix {
+		nodes := strings.Split(prefix, "/")
+		for _, node := range nodes {
+			switch v[node].(type) {
+			case map[string]interface{}:
+				v, _ = v[node].(map[string]interface{})
 			}
 		}
 	}

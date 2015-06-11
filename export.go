@@ -23,6 +23,8 @@ type JsonExport struct {
 	// How frequently should we poll the consul server for
 	// changes. This should be in seconds
 	PollFrequency time.Duration
+	// Should the output include the nodes in the included prefix?
+	IncludePrefix bool
 
 	FlattenedKVs map[string]interface{}
 
@@ -35,6 +37,7 @@ func (c *JsonExport) ParseFlags(args []string) {
 	flags.StringVar(&c.Prefix, "prefix", "", "What KV prefix should I track?")
 	flags.BoolVar(&c.Timestamp, "timestamp", false, "Should I create timestamped values of this")
 	flags.BoolVar(&c.Poll, "poll", false, "Should I poll for changes")
+	flags.BoolVar(&c.IncludePrefix, "include-prefix", true, "Should I remove the prefix values when exporting?")
 
 	frequency := flags.Int("poll-frequency", 60, "How frequently should we poll the consul agent. In seconds")
 	c.PollFrequency = time.Duration(*frequency)
@@ -76,7 +79,7 @@ func (c *JsonExport) WriteFile(newJson []byte) {
 }
 
 func (c *JsonExport) GenerateJson() []byte {
-	c.FlattenedKVs = consulToNestedMap(c.Prefix)
+	c.FlattenedKVs = consulToNestedMap(c.Prefix, c.IncludePrefix)
 
 	js, err := json.Marshal(c.FlattenedKVs)
 	if err != nil {
