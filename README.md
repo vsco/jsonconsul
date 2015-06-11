@@ -44,6 +44,11 @@ There are five ways to run `jsonconsul export`. There are:
 jsonconsul export -prefix="foo"
 ```
 
+If we don't want to include the prefix in the outputed json:
+```sh
+jsonconsul export -include-prefix=false -prefix="foo"
+```
+
 #### Output to file
 ```sh
 jsonconsul export -prefix="foo" foo.json
