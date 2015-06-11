@@ -22,12 +22,14 @@ func (ji *JsonImport) ParseFlags(args []string) {
 	flags := flag.NewFlagSet(Name, flag.ContinueOnError)
 
 	flags.StringVar(&ji.Prefix, "prefix", "", "What prefix should the Key Values be stored under.")
-	flags.StringVar(&ji.Filename, "json-file", "", "Json file that will be imported into Consul.")
 	flags.Parse(args)
 
-	if ji.Filename == "" {
-		fmt.Println("Include filename with -json-file")
+	leftovers := flags.Args()
+	if len(leftovers) == 0 {
+		fmt.Println("Must pass a file to import")
 		os.Exit(-1)
+	} else {
+		ji.Filename = leftovers[0]
 	}
 }
 

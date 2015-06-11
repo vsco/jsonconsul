@@ -33,7 +33,6 @@ func (c *JsonExport) ParseFlags(args []string) {
 	flags := flag.NewFlagSet(Name, flag.ContinueOnError)
 
 	flags.StringVar(&c.Prefix, "prefix", "", "What KV prefix should I track?")
-	flags.StringVar(&c.ConfigFile, "config", "", "Place to output the config file. Default is config.json")
 	flags.BoolVar(&c.Timestamp, "timestamp", false, "Should I create timestamped values of this")
 	flags.BoolVar(&c.Poll, "poll", false, "Should I poll for changes")
 
@@ -41,6 +40,11 @@ func (c *JsonExport) ParseFlags(args []string) {
 	c.PollFrequency = time.Duration(*frequency)
 
 	flags.Parse(args)
+
+	leftovers := flags.Args()
+	if len(leftovers) != 0 {
+		c.ConfigFile = leftovers[0]
+	}
 }
 
 func (c *JsonExport) fileNameWithTimestamp() string {
@@ -95,9 +99,7 @@ func (c *JsonExport) Run() {
 func (c *JsonExport) RunWatcher() {
 	for {
 		fmt.Println("Waiting", time.Second*c.PollFrequency)
-		select {
-		case <-time.After(time.Second * c.PollFrequency):
-			c.Run()
-		}
+		<-time.After(time.Second * c.PollFrequency)
+		c.Run()
 	}
 }
