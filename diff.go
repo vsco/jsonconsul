@@ -1,13 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	// "github.com/sergi/go-diff/diffmatchpatch"
-	"io/ioutil"
 	"os"
-	"strings"
 )
 
 type JsonDiff struct {

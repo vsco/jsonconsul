@@ -5,6 +5,10 @@ import (
 	"strings"
 )
 
+func mapToConsul() map[string]string {
+	return nil
+}
+
 func consulToFlattenedMap(prefix string) {
 
 }
