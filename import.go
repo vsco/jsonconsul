@@ -17,7 +17,7 @@ type JsonImport struct {
 	// File containing the Json to be converted to KVs.
 	Filename string
 
-	flattened map[string]string
+	FlattenedKVs map[string]string
 }
 
 func (ji *JsonImport) ParseFlags(args []string) {
@@ -38,7 +38,7 @@ func (ji *JsonImport) keysFromJson(nested interface{}, prefix string) {
 		newPrefix := fmt.Sprintf("%s/%s", prefix, k)
 		switch v.(type) {
 		case string:
-			ji.flattened[newPrefix] = v.(string)
+			ji.FlattenedKVs[newPrefix] = v.(string)
 		case interface{}:
 			ji.keysFromJson(v, newPrefix)
 		}
@@ -75,7 +75,7 @@ func (ji *JsonImport) setConsulValues() {
 	client, _ := api.NewClient(api.DefaultConfig())
 	kv := client.KV() // Lookup the pair
 
-	for k, v := range ji.flattened {
+	for k, v := range ji.FlattenedKVs {
 		p := &api.KVPair{
 			Key:   ji.prefixedKey(k),
 			Value: []byte(v),
@@ -91,7 +91,7 @@ func (ji *JsonImport) setConsulValues() {
 func (ji *JsonImport) Run() {
 	unmarshalled := ji.readFile()
 
-	ji.flattened = make(map[string]string)
+	ji.FlattenedKVs = make(map[string]string)
 	ji.keysFromJson(unmarshalled, "")
 	ji.setConsulValues()
 }

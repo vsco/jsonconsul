@@ -5,10 +5,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/hashicorp/consul/api"
 	"io/ioutil"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -26,6 +24,8 @@ type JsonExport struct {
 	// changes. This should be in seconds
 	PollFrequency time.Duration
 
+	FlattenedKVs map[string]interface{}
+
 	currentJson []byte
 }
 
@@ -41,36 +41,6 @@ func (c *JsonExport) ParseFlags(args []string) {
 	c.PollFrequency = time.Duration(*frequency)
 
 	flags.Parse(args)
-}
-
-func (c *JsonExport) getConsulToMap() (v map[string]interface{}) {
-	client, _ := api.NewClient(api.DefaultConfig())
-	kv := client.KV() // Lookup the pair
-
-	pairs, _, err := kv.List(c.Prefix, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	v = make(map[string]interface{})
-
-	for _, n := range pairs {
-		keyIter := v
-		keys := strings.Split(n.Key, "/")
-
-		for i, key := range keys {
-			if i == len(keys)-1 {
-				keyIter[key] = string(n.Value)
-			} else {
-				if _, ok := keyIter[key]; !ok {
-					keyIter[key] = make(map[string]interface{})
-				}
-				keyIter = keyIter[key].(map[string]interface{})
-			}
-		}
-	}
-
-	return
 }
 
 func (c *JsonExport) fileNameWithTimestamp() string {
@@ -102,9 +72,9 @@ func (c *JsonExport) WriteFile(newJson []byte) {
 }
 
 func (c *JsonExport) GenerateJson() []byte {
-	consulMap := c.getConsulToMap()
+	c.FlattenedKVs = consulToNestedMap(c.Prefix)
 
-	js, err := json.Marshal(consulMap)
+	js, err := json.Marshal(c.FlattenedKVs)
 	if err != nil {
 		panic(err)
 	}
