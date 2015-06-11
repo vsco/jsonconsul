@@ -19,10 +19,10 @@ type JsonExport struct {
 	// the versions so that there is a trail.
 	Timestamp bool
 	// Should we poll for consul changes.
-	Poll bool
+	Watch bool
 	// How frequently should we poll the consul server for
 	// changes. This should be in seconds
-	PollFrequency time.Duration
+	WatchFrequency time.Duration
 	// Should the output include the nodes in the included prefix?
 	IncludePrefix bool
 
@@ -36,11 +36,12 @@ func (c *JsonExport) ParseFlags(args []string) {
 
 	flags.StringVar(&c.Prefix, "prefix", "", "What KV prefix should I track?")
 	flags.BoolVar(&c.Timestamp, "timestamp", false, "Should I create timestamped values of this")
-	flags.BoolVar(&c.Poll, "poll", false, "Should I poll for changes")
 	flags.BoolVar(&c.IncludePrefix, "include-prefix", true, "Should I remove the prefix values when exporting?")
 
-	frequency := flags.Int("poll-frequency", 60, "How frequently should we poll the consul agent. In seconds")
-	c.PollFrequency = time.Duration(*frequency)
+	if c.Watch {
+		frequency := flags.Int("poll-frequency", 60, "How frequently should we poll the consul agent. In seconds")
+		c.WatchFrequency = time.Duration(*frequency)
+	}
 
 	flags.Parse(args)
 
@@ -101,8 +102,8 @@ func (c *JsonExport) Run() {
 
 func (c *JsonExport) RunWatcher() {
 	for {
-		fmt.Println("Waiting", time.Second*c.PollFrequency)
-		<-time.After(time.Second * c.PollFrequency)
+		fmt.Println("Waiting", time.Second*c.WatchFrequency)
+		<-time.After(time.Second * c.WatchFrequency)
 		c.Run()
 	}
 }

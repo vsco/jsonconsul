@@ -63,18 +63,18 @@ This generates a file called `foo.json.<unixtimestamp>`. `foo.json`
 will then be a symbolic link to `foo.json.<unixtimestamp>`.
 
 
-#### Poll and output to file
+#### Watch and output to file
 ```sh
-jsonconsul watch -prefix="foo" -poll foo.json
+jsonconsul watch -prefix="foo" foo.json
 ```
 
 This polls consul every minute for changes and outputs those values to
 json. If an alternate frequency is preferred then include the
-`-poll_frequency` flag.
+`-watch-frequency` flag.
 
-#### Poll and output to file with timestamp
+#### Watch and output to file with timestamp
 ```sh
-jsonconsul watch -prefix="foo" -timestamp -poll foo.json
+jsonconsul watch -prefix="foo" -timestamp foo.json
 ```
 
 
