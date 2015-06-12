@@ -20,13 +20,13 @@ Here is an example file named `example.json`
 Now if we want to import this into the root prefix then we'd do the following:
 
 ```sh
-jsonconsul import -json-file example.json
+jsonconsul import example.json
 ```
 
 To import into an alternate prefix the following needs to be done:
 
 ```sh
-jsonconsul import -prefix='vsco/buzz' -json-file example.json
+jsonconsul import -prefix='vsco/buzz' example.json
 ```
 
 ### Export
@@ -39,37 +39,46 @@ There are five ways to run `jsonconsul export`. There are:
  - Poll and output to file after a duration.
  - Poll and output to file after a duration but with timestamped output file.
 
+Options:
+
+ - `-json-values` Convert the values from Consul and treat them as JSON values.
+
 #### Output to STDOUT
 ```sh
 jsonconsul export -prefix="foo"
 ```
 
+If we don't want to include the prefix in the outputed json:
+```sh
+jsonconsul export -include-prefix=false -prefix="foo"
+```
+
 #### Output to file
 ```sh
-jsonconsul export -prefix="foo" -config=foo.json
+jsonconsul export -prefix="foo" foo.json
 ```
 
 #### Output to file with timestamp
 ```sh
-jsonconsul export -prefix="foo" -config=foo.json -timestamp
+jsonconsul export -prefix="foo" -timestamp foo.json
 ```
 
 This generates a file called `foo.json.<unixtimestamp>`. `foo.json`
 will then be a symbolic link to `foo.json.<unixtimestamp>`.
 
 
-#### Poll and output to file
+#### Watch and output to file
 ```sh
-jsonconsul watch -prefix="foo" -config=foo.json -poll
+jsonconsul watch -prefix="foo" foo.json
 ```
 
 This polls consul every minute for changes and outputs those values to
 json. If an alternate frequency is preferred then include the
-`-poll_frequency` flag.
+`-watch-frequency` flag.
 
-#### Poll and output to file with timestamp
+#### Watch and output to file with timestamp
 ```sh
-jsonconsul watch -prefix="foo" -config=foo.json -timestamp -poll
+jsonconsul watch -prefix="foo" -timestamp foo.json
 ```
 
 ## License

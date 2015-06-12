@@ -5,10 +5,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/hashicorp/consul/api"
 	"io/ioutil"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -21,10 +19,16 @@ type JsonExport struct {
 	// the versions so that there is a trail.
 	Timestamp bool
 	// Should we poll for consul changes.
-	Poll bool
+	Watch bool
 	// How frequently should we poll the consul server for
 	// changes. This should be in seconds
-	PollFrequency time.Duration
+	WatchFrequency time.Duration
+	// Should the output include the nodes in the included prefix?
+	IncludePrefix bool
+	// Parse the Values as Json
+	JsonValues bool
+
+	FlattenedKVs map[string]interface{}
 
 	currentJson []byte
 }
@@ -33,44 +37,21 @@ func (c *JsonExport) ParseFlags(args []string) {
 	flags := flag.NewFlagSet(Name, flag.ContinueOnError)
 
 	flags.StringVar(&c.Prefix, "prefix", "", "What KV prefix should I track?")
-	flags.StringVar(&c.ConfigFile, "config", "", "Place to output the config file. Default is config.json")
 	flags.BoolVar(&c.Timestamp, "timestamp", false, "Should I create timestamped values of this")
-	flags.BoolVar(&c.Poll, "poll", false, "Should I poll for changes")
+	flags.BoolVar(&c.IncludePrefix, "include-prefix", true, "Should I remove the prefix values when exporting?")
+	flags.BoolVar(&c.JsonValues, "json-values", true, "Have the values that are returned by Consul be parsed as json.")
 
-	frequency := flags.Int("poll-frequency", 60, "How frequently should we poll the consul agent. In seconds")
-	c.PollFrequency = time.Duration(*frequency)
+	if c.Watch {
+		frequency := flags.Int("poll-frequency", 60, "How frequently should we poll the consul agent. In seconds")
+		c.WatchFrequency = time.Duration(*frequency)
+	}
 
 	flags.Parse(args)
-}
 
-func (c *JsonExport) getConsulToMap() (v map[string]interface{}) {
-	client, _ := api.NewClient(api.DefaultConfig())
-	kv := client.KV() // Lookup the pair
-
-	pairs, _, err := kv.List(c.Prefix, nil)
-	if err != nil {
-		panic(err)
+	leftovers := flags.Args()
+	if len(leftovers) != 0 {
+		c.ConfigFile = leftovers[0]
 	}
-
-	v = make(map[string]interface{})
-
-	for _, n := range pairs {
-		keyIter := v
-		keys := strings.Split(n.Key, "/")
-
-		for i, key := range keys {
-			if i == len(keys)-1 {
-				keyIter[key] = string(n.Value)
-			} else {
-				if _, ok := keyIter[key]; !ok {
-					keyIter[key] = make(map[string]interface{})
-				}
-				keyIter = keyIter[key].(map[string]interface{})
-			}
-		}
-	}
-
-	return
 }
 
 func (c *JsonExport) fileNameWithTimestamp() string {
@@ -101,10 +82,26 @@ func (c *JsonExport) WriteFile(newJson []byte) {
 	c.currentJson = newJson
 }
 
-func (c *JsonExport) GenerateJson() []byte {
-	consulMap := c.getConsulToMap()
+func (c *JsonExport) jsonifyValues(kvs map[string]interface{}) {
+	for k, v := range kvs {
+		switch v.(type) {
+		case string:
+			var jsonVal interface{}
+			json.Unmarshal([]byte(v.(string)), &jsonVal)
+			kvs[k] = jsonVal
+		case map[string]interface{}:
+			c.jsonifyValues(v.(map[string]interface{}))
+		}
+	}
+}
 
-	js, err := json.Marshal(consulMap)
+func (c *JsonExport) GenerateJson() []byte {
+	c.FlattenedKVs = consulToNestedMap(c.Prefix, c.IncludePrefix)
+	if c.JsonValues {
+		c.jsonifyValues(c.FlattenedKVs)
+	}
+
+	js, err := json.Marshal(c.FlattenedKVs)
 	if err != nil {
 		panic(err)
 	}
@@ -124,10 +121,8 @@ func (c *JsonExport) Run() {
 
 func (c *JsonExport) RunWatcher() {
 	for {
-		fmt.Println("Waiting", time.Second*c.PollFrequency)
-		select {
-		case <-time.After(time.Second * c.PollFrequency):
-			c.Run()
-		}
+		fmt.Println("Waiting", time.Second*c.WatchFrequency)
+		<-time.After(time.Second * c.WatchFrequency)
+		c.Run()
 	}
 }

@@ -1,1 +1,15 @@
-{"foo":{"bar":"test","blah":"Test","do":"TEST","loud":{"asd":{"bah":"test"}}}}
+{
+    "foo": {
+        "bool": true,
+        "float": 1.23,
+        "null": null,
+        "bar": "test",
+        "blah": "Test",
+        "do": "TEST",
+        "loud": {
+            "asd": {
+                "bah": "test"
+            }
+        }
+    }
+}

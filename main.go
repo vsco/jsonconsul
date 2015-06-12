@@ -30,11 +30,11 @@ func main() {
 
 	switch os.Args[1] {
 	case "watch":
-		jsonExport := &JsonExport{}
+		jsonExport := &JsonExport{Watch: true}
 		jsonExport.ParseFlags(os.Args[2:])
 		jsonExport.RunWatcher()
 	case "export":
-		jsonExport := &JsonExport{}
+		jsonExport := &JsonExport{Watch: false}
 		jsonExport.ParseFlags(os.Args[2:])
 		jsonExport.Run()
 	case "import":

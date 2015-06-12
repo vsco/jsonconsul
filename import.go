@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/hashicorp/consul/api"
 	"io/ioutil"
 	"os"
-	"strings"
 )
 
 type JsonImport struct {
@@ -17,31 +15,21 @@ type JsonImport struct {
 	// File containing the Json to be converted to KVs.
 	Filename string
 
-	flattened map[string]string
+	FlattenedKVs map[string]interface{}
 }
 
 func (ji *JsonImport) ParseFlags(args []string) {
 	flags := flag.NewFlagSet(Name, flag.ContinueOnError)
 
 	flags.StringVar(&ji.Prefix, "prefix", "", "What prefix should the Key Values be stored under.")
-	flags.StringVar(&ji.Filename, "json-file", "", "Json file that will be imported into Consul.")
 	flags.Parse(args)
 
-	if ji.Filename == "" {
-		fmt.Println("Include filename with -json-file")
+	leftovers := flags.Args()
+	if len(leftovers) == 0 {
+		fmt.Println("Must pass a file to import")
 		os.Exit(-1)
-	}
-}
-
-func (ji *JsonImport) keysFromJson(nested interface{}, prefix string) {
-	for k, v := range nested.(map[string]interface{}) {
-		newPrefix := fmt.Sprintf("%s/%s", prefix, k)
-		switch v.(type) {
-		case string:
-			ji.flattened[newPrefix] = v.(string)
-		case interface{}:
-			ji.keysFromJson(v, newPrefix)
-		}
+	} else {
+		ji.Filename = leftovers[0]
 	}
 }
 
@@ -59,39 +47,10 @@ func (ji *JsonImport) readFile() (unmarshalled map[string]interface{}) {
 	return
 }
 
-func (ji *JsonImport) prefixedKey(key string) (newKey string) {
-	if ji.Prefix == "" {
-		newKey = key
-	} else {
-		newKey = fmt.Sprintf("%s/%s", ji.Prefix, strings.TrimPrefix(key, "/"))
-	}
-
-	newKey = strings.TrimPrefix(newKey, "/")
-
-	return
-}
-
-func (ji *JsonImport) setConsulValues() {
-	client, _ := api.NewClient(api.DefaultConfig())
-	kv := client.KV() // Lookup the pair
-
-	for k, v := range ji.flattened {
-		p := &api.KVPair{
-			Key:   ji.prefixedKey(k),
-			Value: []byte(v),
-		}
-
-		_, err := kv.Put(p, nil)
-		if err != nil {
-			panic(err)
-		}
-	}
-}
-
 func (ji *JsonImport) Run() {
+	ji.FlattenedKVs = make(map[string]interface{})
 	unmarshalled := ji.readFile()
 
-	ji.flattened = make(map[string]string)
-	ji.keysFromJson(unmarshalled, "")
-	ji.setConsulValues()
+	interfaceToConsulFlattenedMap(unmarshalled, "", ji.FlattenedKVs)
+	setConsulKVs(ji.Prefix, ji.FlattenedKVs)
 }
