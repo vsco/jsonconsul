@@ -21,7 +21,7 @@ release: build test xcompile
 		(cd $(shell pwd)/build && tar -zcvf tgz/$$f.tar.gz $$f); \
 		echo $$f; \
 	done
-	git tag $(VERSION) && git push tags
+	git tag $(VERSION) && git push origin --tags
 
 clean:
 	rm -rf bin
