@@ -13,12 +13,15 @@ type JsonDiff struct {
 	Prefix string
 	// File containing the Json to be converted to KVs.
 	Filename string
+	// Are the KVs json values?
+	JsonValues bool
 }
 
 func (ji *JsonDiff) ParseFlags(args []string) {
 	flags := flag.NewFlagSet(Name, flag.ContinueOnError)
 
 	flags.StringVar(&ji.Prefix, "prefix", "", "What prefix should the Key Values be stored under.")
+	flags.BoolVar(&ji.JsonValues, "json-values", true, "Have the values that are returned by Consul be parsed as json.")
 	flags.Parse(args)
 
 	leftovers := flags.Args()
@@ -31,6 +34,15 @@ func (ji *JsonDiff) ParseFlags(args []string) {
 }
 
 func (ji *JsonDiff) Run() {
+	// Not yet implemented
+	// config := &JsonExport{
+	// 	Prefix:        "foo",
+	// 	IncludePrefix: true,
+	// 	JsonValues:    false,
+	// }
+	// config.Run()
+
+	// jsonImport = JsonImport{}
 	// unmarshalled := ji.readFile()
 
 	// Get the JsonImport values to convert to key values
