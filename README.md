@@ -81,6 +81,23 @@ json. If an alternate frequency is preferred then include the
 jsonconsul watch -prefix="foo" -timestamp foo.json
 ```
 
+
+### Diff
+
+If you want to see how values in Consul differ from a json file that
+you have this command will show you the differences between the local
+json values and consul.
+
+```sh
+jsonconsul diff -prefix="foo" file.json
+```
+
+Or if you want to diff from global:
+
+```sh
+jsonconsul diff file.json
+```
+
 ## License
 
 The MIT License (MIT)

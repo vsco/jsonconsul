@@ -41,6 +41,10 @@ func main() {
 		jsonImport := &JsonImport{}
 		jsonImport.ParseFlags(os.Args[2:])
 		jsonImport.Run()
+	case "diff":
+		jsonDiff := &JsonDiff{}
+		jsonDiff.ParseFlags(os.Args[2:])
+		jsonDiff.Run()
 	default:
 		showUsage()
 	}
