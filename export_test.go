@@ -1,6 +1,9 @@
 package main
 
 func ExampleJsonExport_Run_IncludePrefix() {
+	ji := &JsonImport{Filename: "example.json"}
+	ji.Run()
+
 	config := &JsonExport{
 		Prefix:        "foo",
 		IncludePrefix: true,
@@ -13,6 +16,9 @@ func ExampleJsonExport_Run_IncludePrefix() {
 }
 
 func ExampleJsonExport_Run_NoIncludePrefix() {
+	ji := &JsonImport{Filename: "example.json"}
+	ji.Run()
+
 	config := &JsonExport{
 		Prefix:        "foo",
 		IncludePrefix: false,
@@ -25,6 +31,9 @@ func ExampleJsonExport_Run_NoIncludePrefix() {
 }
 
 func ExampleJsonExport_Run_IncludePrefixNoJsonValues() {
+	ji := &JsonImport{Filename: "example.json"}
+	ji.Run()
+
 	config := &JsonExport{
 		Prefix:        "foo",
 		IncludePrefix: true,
