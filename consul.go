@@ -3,25 +3,27 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/consul/api"
 	"strings"
 )
 
-func interfaceToConsulFlattenedMap(nested interface{}, prefix string, output map[string]string) {
+func interfaceToConsulFlattenedMap(nested interface{}, prefix string, output map[string]interface{}) {
 	for k, v := range nested.(map[string]interface{}) {
 		newPrefix := fmt.Sprintf("%s/%s", prefix, k)
+
 		switch v.(type) {
-		case string:
-			output[newPrefix] = v.(string)
-		case interface{}:
+		case map[string]interface{}:
 			interfaceToConsulFlattenedMap(v, newPrefix, output)
+		default:
+			output[newPrefix] = v
 		}
 	}
 }
 
-func consulToFlattenedMap(prefix string) map[string]string {
-	output := make(map[string]string)
+func consulToFlattenedMap(prefix string) map[string]interface{} {
+	output := make(map[string]interface{})
 	nested := consulToNestedMap(prefix, true)
 	interfaceToConsulFlattenedMap(nested, prefix, output)
 
@@ -80,17 +82,22 @@ func consulPrefixedKey(prefix, key string) (newKey string) {
 	return
 }
 
-func setConsulKVs(prefix string, kvMap map[string]string) {
+func setConsulKVs(prefix string, kvMap map[string]interface{}) {
 	client, _ := api.NewClient(api.DefaultConfig())
 	kv := client.KV()
 
 	for k, v := range kvMap {
-		p := &api.KVPair{
-			Key:   consulPrefixedKey(prefix, k),
-			Value: []byte(v),
+		value, err := json.Marshal(v)
+		if err != nil {
+			panic(err)
 		}
 
-		_, err := kv.Put(p, nil)
+		p := &api.KVPair{
+			Key:   consulPrefixedKey(prefix, k),
+			Value: value,
+		}
+
+		_, err = kv.Put(p, nil)
 		if err != nil {
 			panic(err)
 		}

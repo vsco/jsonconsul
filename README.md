@@ -39,6 +39,10 @@ There are five ways to run `jsonconsul export`. There are:
  - Poll and output to file after a duration.
  - Poll and output to file after a duration but with timestamped output file.
 
+Options:
+
+ - `-json-values` Convert the values from Consul and treat them as JSON values.
+
 #### Output to STDOUT
 ```sh
 jsonconsul export -prefix="foo"

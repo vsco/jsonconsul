@@ -25,6 +25,8 @@ type JsonExport struct {
 	WatchFrequency time.Duration
 	// Should the output include the nodes in the included prefix?
 	IncludePrefix bool
+	// Parse the Values as Json
+	JsonValues bool
 
 	FlattenedKVs map[string]interface{}
 
@@ -37,6 +39,7 @@ func (c *JsonExport) ParseFlags(args []string) {
 	flags.StringVar(&c.Prefix, "prefix", "", "What KV prefix should I track?")
 	flags.BoolVar(&c.Timestamp, "timestamp", false, "Should I create timestamped values of this")
 	flags.BoolVar(&c.IncludePrefix, "include-prefix", true, "Should I remove the prefix values when exporting?")
+	flags.BoolVar(&c.JsonValues, "json-values", true, "Have the values that are returned by Consul be parsed as json.")
 
 	if c.Watch {
 		frequency := flags.Int("poll-frequency", 60, "How frequently should we poll the consul agent. In seconds")
@@ -79,8 +82,24 @@ func (c *JsonExport) WriteFile(newJson []byte) {
 	c.currentJson = newJson
 }
 
+func (c *JsonExport) jsonifyValues(kvs map[string]interface{}) {
+	for k, v := range kvs {
+		switch v.(type) {
+		case string:
+			var jsonVal interface{}
+			json.Unmarshal([]byte(v.(string)), &jsonVal)
+			kvs[k] = jsonVal
+		case map[string]interface{}:
+			c.jsonifyValues(v.(map[string]interface{}))
+		}
+	}
+}
+
 func (c *JsonExport) GenerateJson() []byte {
 	c.FlattenedKVs = consulToNestedMap(c.Prefix, c.IncludePrefix)
+	if c.JsonValues {
+		c.jsonifyValues(c.FlattenedKVs)
+	}
 
 	js, err := json.Marshal(c.FlattenedKVs)
 	if err != nil {

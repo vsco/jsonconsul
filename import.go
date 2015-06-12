@@ -15,7 +15,7 @@ type JsonImport struct {
 	// File containing the Json to be converted to KVs.
 	Filename string
 
-	FlattenedKVs map[string]string
+	FlattenedKVs map[string]interface{}
 }
 
 func (ji *JsonImport) ParseFlags(args []string) {
@@ -48,7 +48,7 @@ func (ji *JsonImport) readFile() (unmarshalled map[string]interface{}) {
 }
 
 func (ji *JsonImport) Run() {
-	ji.FlattenedKVs = make(map[string]string)
+	ji.FlattenedKVs = make(map[string]interface{})
 	unmarshalled := ji.readFile()
 
 	interfaceToConsulFlattenedMap(unmarshalled, "", ji.FlattenedKVs)

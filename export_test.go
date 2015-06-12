@@ -1,26 +1,37 @@
 package main
 
-import (
-	"github.com/hashicorp/consul/api"
-)
-
-func ExampleJsonExport_Run() {
-	client, _ := api.NewClient(api.DefaultConfig())
-	kv := client.KV() // Lookup the pair
-
-	for _, i := range []string{"foo/bar", "foo/blah", "foo/do", "foo/loud/asd/bah"} {
-		p := &api.KVPair{Key: i, Value: []byte("test")}
-		_, err := kv.Put(p, nil)
-		if err != nil {
-			panic(err)
-		}
-	}
-
+func ExampleJsonExport_Run_IncludePrefix() {
 	config := &JsonExport{
-		Prefix: "foo",
+		Prefix:        "foo",
+		IncludePrefix: true,
+		JsonValues:    true,
 	}
 	config.Run()
 
 	// Output:
-	// {"foo":{"bar":"test","blah":"test","do":"test","loud":{"asd":{"bah":"test"}}}}
+	// {"foo":{"bar":"test","blah":"Test","bool":true,"do":"TEST","float":1.23,"loud":{"asd":{"bah":"test"}},"null":null}}
+}
+
+func ExampleJsonExport_Run_NoIncludePrefix() {
+	config := &JsonExport{
+		Prefix:        "foo",
+		IncludePrefix: false,
+		JsonValues:    true,
+	}
+	config.Run()
+
+	// Output:
+	// {"bar":"test","blah":"Test","bool":true,"do":"TEST","float":1.23,"loud":{"asd":{"bah":"test"}},"null":null}
+}
+
+func ExampleJsonExport_Run_IncludePrefixNoJsonValues() {
+	config := &JsonExport{
+		Prefix:        "foo",
+		IncludePrefix: true,
+		JsonValues:    false,
+	}
+	config.Run()
+
+	// Output:
+	// {"foo":{"bar":"\"test\"","blah":"\"Test\"","bool":"true","do":"\"TEST\"","float":"1.23","loud":{"asd":{"bah":"\"test\""}},"null":"null"}}
 }
