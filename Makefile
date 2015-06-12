@@ -1,5 +1,6 @@
 
 build:
+	go get
 	go build
 
 release: build
