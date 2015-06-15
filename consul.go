@@ -112,6 +112,13 @@ func setConsulKV(key string, value []byte) {
 }
 
 func init() {
-	client, _ = api.NewClient(api.DefaultConfig())
+	var (
+		err error
+	)
+
+	client, err = api.NewClient(api.DefaultConfig())
+	if err != nil {
+		panic(err)
+	}
 	kv = client.KV()
 }

@@ -8,6 +8,15 @@ into Consul.
 
 ## Usage
 
+### Set
+
+To set a key and also verify that the value is valid JSON run the
+following command.
+
+```
+jsonconsul set path/to/key \"validjsonvalue\"
+```
+
 ### Import
 
 A json config can be used to update key values in Consul.
