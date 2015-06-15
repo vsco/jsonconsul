@@ -9,6 +9,11 @@ import (
 	"strings"
 )
 
+var (
+	client *api.Client
+	kv     *api.KV
+)
+
 func interfaceToConsulFlattenedMap(nested interface{}, prefix string, output map[string]interface{}) {
 	for k, v := range nested.(map[string]interface{}) {
 		newPrefix := fmt.Sprintf("%s/%s", prefix, k)
@@ -31,7 +36,6 @@ func consulToFlattenedMap(prefix string) map[string]interface{} {
 }
 
 func consulToNestedMap(prefix string, includePrefix bool) (v map[string]interface{}) {
-	client, _ := api.NewClient(api.DefaultConfig())
 	kv := client.KV() // Lookup the pair
 
 	pairs, _, err := kv.List(prefix, nil)
@@ -83,8 +87,6 @@ func consulPrefixedKey(prefix, key string) (newKey string) {
 }
 
 func setConsulKVs(prefix string, kvMap map[string]interface{}) {
-	client, _ := api.NewClient(api.DefaultConfig())
-	kv := client.KV()
 
 	for k, v := range kvMap {
 		value, err := json.Marshal(v)
@@ -92,14 +94,24 @@ func setConsulKVs(prefix string, kvMap map[string]interface{}) {
 			panic(err)
 		}
 
-		p := &api.KVPair{
-			Key:   consulPrefixedKey(prefix, k),
-			Value: value,
-		}
-
-		_, err = kv.Put(p, nil)
-		if err != nil {
-			panic(err)
-		}
+		setConsulKV(consulPrefixedKey(prefix, k), value)
 	}
+}
+
+func setConsulKV(key string, value []byte) {
+	p := &api.KVPair{
+		Key:   key,
+		Value: value,
+	}
+
+	_, err := kv.Put(p, nil)
+	if err != nil {
+		panic(err)
+	}
+
+}
+
+func init() {
+	client, _ = api.NewClient(api.DefaultConfig())
+	kv = client.KV()
 }
