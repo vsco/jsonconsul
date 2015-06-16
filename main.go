@@ -45,7 +45,10 @@ func main() {
 	case "set":
 		jsonSet := &JsonSet{}
 		jsonSet.ParseFlags(os.Args[2:])
-		jsonSet.Run()
+		err := jsonSet.Run()
+		if err != nil {
+			fmt.Println(err)
+		}
 	default:
 		showUsage()
 	}
