@@ -33,24 +33,33 @@ func (ji *JsonImport) ParseFlags(args []string) {
 	}
 }
 
-func (ji *JsonImport) readFile() (unmarshalled map[string]interface{}) {
-	fileOutput, err := ioutil.ReadFile(ji.Filename)
+func (ji *JsonImport) readFile() (unmarshalled map[string]interface{}, err error) {
+	var (
+		fileOutput []byte
+	)
+
+	fileOutput, err = ioutil.ReadFile(ji.Filename)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	// Import the json file
-	if err := json.Unmarshal(fileOutput, &unmarshalled); err != nil {
-		panic(err)
+	if err = json.Unmarshal(fileOutput, &unmarshalled); err != nil {
+		return nil, err
 	}
 
 	return
 }
 
-func (ji *JsonImport) Run() {
+func (ji *JsonImport) Run() error {
 	ji.FlattenedKVs = make(map[string]interface{})
-	unmarshalled := ji.readFile()
+	unmarshalled, err := ji.readFile()
+	if err != nil {
+		return err
+	}
 
 	interfaceToConsulFlattenedMap(unmarshalled, "", ji.FlattenedKVs)
 	setConsulKVs(ji.Prefix, ji.FlattenedKVs)
+
+	return nil
 }

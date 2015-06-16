@@ -41,13 +41,18 @@ func main() {
 	case "import":
 		jsonImport := &JsonImport{}
 		jsonImport.ParseFlags(os.Args[2:])
-		jsonImport.Run()
+		err := jsonImport.Run()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(-1)
+		}
 	case "set":
 		jsonSet := &JsonSet{}
 		jsonSet.ParseFlags(os.Args[2:])
 		err := jsonSet.Run()
 		if err != nil {
 			fmt.Println(err)
+			os.Exit(-1)
 		}
 	default:
 		showUsage()
