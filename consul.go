@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/consul/api"
+	"os"
 	"strings"
 )
 
@@ -87,7 +88,6 @@ func consulPrefixedKey(prefix, key string) (newKey string) {
 }
 
 func setConsulKVs(prefix string, kvMap map[string]interface{}) {
-
 	for k, v := range kvMap {
 		value, err := json.Marshal(v)
 		if err != nil {
@@ -108,7 +108,6 @@ func setConsulKV(key string, value []byte) {
 	if err != nil {
 		panic(err)
 	}
-
 }
 
 func init() {
@@ -118,7 +117,8 @@ func init() {
 
 	client, err = api.NewClient(api.DefaultConfig())
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(-1)
 	}
 	kv = client.KV()
 }

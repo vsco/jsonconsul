@@ -88,23 +88,33 @@ func (c *JsonExport) WriteFile(newJson []byte) error {
 	return nil
 }
 
-func (c *JsonExport) jsonifyValues(kvs map[string]interface{}) {
+func (c *JsonExport) jsonifyValues(kvs map[string]interface{}) error {
 	for k, v := range kvs {
 		switch v.(type) {
 		case string:
 			var jsonVal interface{}
-			json.Unmarshal([]byte(v.(string)), &jsonVal)
+			err := json.Unmarshal([]byte(v.(string)), &jsonVal)
+			if err != nil {
+				return err
+			}
 			kvs[k] = jsonVal
 		case map[string]interface{}:
-			c.jsonifyValues(v.(map[string]interface{}))
+			if err := c.jsonifyValues(v.(map[string]interface{})); err != nil {
+				return err
+			}
 		}
 	}
+
+	return nil
 }
 
 func (c *JsonExport) GenerateJson() ([]byte, error) {
 	c.FlattenedKVs = consulToNestedMap(c.Prefix, c.IncludePrefix)
 	if c.JsonValues {
-		c.jsonifyValues(c.FlattenedKVs)
+		err := c.jsonifyValues(c.FlattenedKVs)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	js, err := json.Marshal(c.FlattenedKVs)
