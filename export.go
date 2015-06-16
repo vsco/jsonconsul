@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"time"
 )
@@ -58,10 +59,10 @@ func (c *JsonExport) fileNameWithTimestamp() string {
 	return fmt.Sprintf("%s.%d", c.ConfigFile, int32(time.Now().Unix()))
 }
 
-func (c *JsonExport) WriteFile(newJson []byte) {
+func (c *JsonExport) WriteFile(newJson []byte) error {
 	if bytes.Equal(c.currentJson, newJson) {
 		// File didn't change.
-		return
+		return nil
 	}
 
 	fileName := c.ConfigFile
@@ -71,15 +72,20 @@ func (c *JsonExport) WriteFile(newJson []byte) {
 
 	err := ioutil.WriteFile(fileName, newJson, 0644)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// Symlink files
 	if c.Timestamp {
-		os.Symlink(fileName, c.ConfigFile)
+		err = os.Symlink(fileName, c.ConfigFile)
+		if err != nil {
+			return err
+		}
 	}
 
 	c.currentJson = newJson
+
+	return nil
 }
 
 func (c *JsonExport) jsonifyValues(kvs map[string]interface{}) {
@@ -95,7 +101,7 @@ func (c *JsonExport) jsonifyValues(kvs map[string]interface{}) {
 	}
 }
 
-func (c *JsonExport) GenerateJson() []byte {
+func (c *JsonExport) GenerateJson() ([]byte, error) {
 	c.FlattenedKVs = consulToNestedMap(c.Prefix, c.IncludePrefix)
 	if c.JsonValues {
 		c.jsonifyValues(c.FlattenedKVs)
@@ -103,26 +109,39 @@ func (c *JsonExport) GenerateJson() []byte {
 
 	js, err := json.Marshal(c.FlattenedKVs)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return js
+	return js, nil
 }
 
-func (c *JsonExport) Run() {
-	json := c.GenerateJson()
+func (c *JsonExport) Run() error {
+	json, err := c.GenerateJson()
+	if err != nil {
+		return err
+	}
 
 	if c.ConfigFile == "" {
 		fmt.Println(string(json))
 	} else {
-		c.WriteFile(json)
+		err := c.WriteFile(json)
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
 func (c *JsonExport) RunWatcher() {
 	for {
-		fmt.Println("Waiting", time.Second*c.WatchFrequency)
+		log.Println("Waiting", time.Second*c.WatchFrequency)
 		<-time.After(time.Second * c.WatchFrequency)
-		c.Run()
+
+		err := c.Run()
+		if err != nil {
+			log.Println(err)
+			break
+		}
 	}
 }

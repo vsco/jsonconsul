@@ -37,7 +37,11 @@ func main() {
 	case "export":
 		jsonExport := &JsonExport{Watch: false}
 		jsonExport.ParseFlags(os.Args[2:])
-		jsonExport.Run()
+		err := jsonExport.Run()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(-1)
+		}
 	case "import":
 		jsonImport := &JsonImport{}
 		jsonImport.ParseFlags(os.Args[2:])
