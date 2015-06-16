@@ -15,6 +15,7 @@ Mode:
   watch    Watch for changes in Consul and generate json files.
   export   Export the keys as a nested JSON file.
   import   Import json file into appropriate KV pairs in Consul.
+  set      Set a K/V in Consul to linted JSON value.
 `
 )
 
@@ -41,6 +42,13 @@ func main() {
 		jsonImport := &JsonImport{}
 		jsonImport.ParseFlags(os.Args[2:])
 		jsonImport.Run()
+	case "set":
+		jsonSet := &JsonSet{}
+		jsonSet.ParseFlags(os.Args[2:])
+		err := jsonSet.Run()
+		if err != nil {
+			fmt.Println(err)
+		}
 	default:
 		showUsage()
 	}

@@ -1,4 +1,4 @@
-NAME = "jsonconsul"
+NAME = jsonconsul
 VERSION = $(shell cat version)
 
 all: deps build
