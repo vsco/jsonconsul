@@ -153,13 +153,13 @@ func (c *JsonExport) Run() error {
 
 func (c *JsonExport) RunWatcher() {
 	for {
-		log.Println("Waiting", time.Second*c.WatchFrequency)
-		<-time.After(time.Second * c.WatchFrequency)
-
 		err := c.Run()
 		if err != nil {
 			log.Println(err)
 			break
 		}
+
+		log.Println("Waiting", time.Second*c.WatchFrequency)
+		<-time.After(time.Second * c.WatchFrequency)
 	}
 }
