@@ -1,4 +1,4 @@
-package main
+package jsonconsul
 
 func ExampleJsonExport_Run_IncludePrefix() {
 	ji := &JsonImport{Filename: "example.json"}

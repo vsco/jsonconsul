@@ -1,4 +1,4 @@
-package main
+package jsonconsul
 
 func ExampleJsonImport_Run() {
 	ji := &JsonImport{Filename: "example.json"}
