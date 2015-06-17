@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -39,24 +40,21 @@ func main() {
 		jsonExport.ParseFlags(os.Args[2:])
 		err := jsonExport.Run()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(-1)
+			log.Fatalln(err)
 		}
 	case "import":
 		jsonImport := &JsonImport{}
 		jsonImport.ParseFlags(os.Args[2:])
 		err := jsonImport.Run()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(-1)
+			log.Fatalln(err)
 		}
 	case "set":
 		jsonSet := &JsonSet{}
 		jsonSet.ParseFlags(os.Args[2:])
 		err := jsonSet.Run()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(-1)
+			log.Fatalln(err)
 		}
 	default:
 		showUsage()

@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/consul/api"
-	"os"
+	"log"
 	"strings"
 )
 
@@ -127,8 +127,7 @@ func init() {
 
 	client, err = api.NewClient(api.DefaultConfig())
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(-1)
+		log.Fatalln(err)
 	}
 	kv = client.KV()
 }
