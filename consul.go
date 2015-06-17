@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/consul/api"
+	"log"
 	"strings"
 )
 
@@ -27,23 +28,27 @@ func interfaceToConsulFlattenedMap(nested interface{}, prefix string, output map
 	}
 }
 
-func consulToFlattenedMap(prefix string) map[string]interface{} {
+func consulToFlattenedMap(prefix string) (map[string]interface{}, error) {
 	output := make(map[string]interface{})
-	nested := consulToNestedMap(prefix, true)
+	nested, err := consulToNestedMap(prefix, true)
+	if err != nil {
+		return nil, err
+	}
+
 	interfaceToConsulFlattenedMap(nested, prefix, output)
 
-	return output
+	return output, nil
 }
 
-func consulToNestedMap(prefix string, includePrefix bool) (v map[string]interface{}) {
+func consulToNestedMap(prefix string, includePrefix bool) (v map[string]interface{}, err error) {
+	v = make(map[string]interface{})
+
 	kv := client.KV() // Lookup the pair
 
 	pairs, _, err := kv.List(prefix, nil)
 	if err != nil {
-		panic(err)
+		return v, err
 	}
-
-	v = make(map[string]interface{})
 
 	for _, n := range pairs {
 		keyIter := v
@@ -71,7 +76,7 @@ func consulToNestedMap(prefix string, includePrefix bool) (v map[string]interfac
 		}
 	}
 
-	return
+	return v, nil
 }
 
 func consulPrefixedKey(prefix, key string) (newKey string) {
@@ -86,19 +91,22 @@ func consulPrefixedKey(prefix, key string) (newKey string) {
 	return
 }
 
-func setConsulKVs(prefix string, kvMap map[string]interface{}) {
-
+func setConsulKVs(prefix string, kvMap map[string]interface{}) error {
 	for k, v := range kvMap {
 		value, err := json.Marshal(v)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
-		setConsulKV(consulPrefixedKey(prefix, k), value)
+		if err := setConsulKV(consulPrefixedKey(prefix, k), value); err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
-func setConsulKV(key string, value []byte) {
+func setConsulKV(key string, value []byte) error {
 	p := &api.KVPair{
 		Key:   key,
 		Value: value,
@@ -106,9 +114,10 @@ func setConsulKV(key string, value []byte) {
 
 	_, err := kv.Put(p, nil)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
+	return nil
 }
 
 func init() {
@@ -118,7 +127,7 @@ func init() {
 
 	client, err = api.NewClient(api.DefaultConfig())
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	kv = client.KV()
 }
