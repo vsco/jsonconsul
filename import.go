@@ -59,7 +59,11 @@ func (ji *JsonImport) Run() error {
 	}
 
 	interfaceToConsulFlattenedMap(unmarshalled, "", ji.FlattenedKVs)
-	setConsulKVs(ji.Prefix, ji.FlattenedKVs)
+
+	err = setConsulKVs(ji.Prefix, ji.FlattenedKVs)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

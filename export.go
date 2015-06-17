@@ -109,9 +109,17 @@ func (c *JsonExport) jsonifyValues(kvs map[string]interface{}) error {
 }
 
 func (c *JsonExport) GenerateJson() ([]byte, error) {
-	c.FlattenedKVs = consulToNestedMap(c.Prefix, c.IncludePrefix)
+	var (
+		err error
+	)
+
+	c.FlattenedKVs, err = consulToNestedMap(c.Prefix, c.IncludePrefix)
+	if err != nil {
+		return nil, err
+	}
+
 	if c.JsonValues {
-		err := c.jsonifyValues(c.FlattenedKVs)
+		err = c.jsonifyValues(c.FlattenedKVs)
 		if err != nil {
 			return nil, err
 		}

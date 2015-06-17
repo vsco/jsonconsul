@@ -141,7 +141,10 @@ func (js *JsonSet) Run() error {
 		return err
 	}
 
-	setConsulKV(js.Key, js.JsonValue)
+	err = setConsulKV(js.Key, js.JsonValue)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
