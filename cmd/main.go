@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/vsco/jsonconsul"
 	"log"
 	"os"
 )
@@ -32,25 +33,25 @@ func main() {
 
 	switch os.Args[1] {
 	case "watch":
-		jsonExport := &JsonExport{Watch: true}
+		jsonExport := &jsonconsul.JsonExport{Watch: true}
 		jsonExport.ParseFlags(os.Args[2:])
 		jsonExport.RunWatcher()
 	case "export":
-		jsonExport := &JsonExport{Watch: false}
+		jsonExport := &jsonconsul.JsonExport{Watch: false}
 		jsonExport.ParseFlags(os.Args[2:])
 		err := jsonExport.Run()
 		if err != nil {
 			log.Fatalln(err)
 		}
 	case "import":
-		jsonImport := &JsonImport{}
+		jsonImport := &jsonconsul.JsonImport{}
 		jsonImport.ParseFlags(os.Args[2:])
 		err := jsonImport.Run()
 		if err != nil {
 			log.Fatalln(err)
 		}
 	case "set":
-		jsonSet := &JsonSet{}
+		jsonSet := &jsonconsul.JsonSet{}
 		jsonSet.ParseFlags(os.Args[2:])
 		err := jsonSet.Run()
 		if err != nil {

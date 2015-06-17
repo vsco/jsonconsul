@@ -8,11 +8,10 @@ deps:
 
 build: deps
 	@mkdir -p bin/
-	go build -o bin/$(NAME)
+	go build -o bin/$(NAME) cmd/*.go
 
 xcompile: deps
-	gox -output="build/{{.Dir}}_$(VERSION)_{{.OS}}_{{.Arch}}/$(NAME)"
-
+	gox -output="build/jsonconsul_$(VERSION)_{{.OS}}_{{.Arch}}/$(NAME)" github.com/vsco/jsonconsul/cmd
 
 release: build test xcompile
 	$(eval FILES := $(shell ls build))

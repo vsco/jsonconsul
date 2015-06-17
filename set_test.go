@@ -1,4 +1,4 @@
-package main
+package jsonconsul
 
 import (
 	"fmt"

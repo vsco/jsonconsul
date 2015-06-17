@@ -1,6 +1,6 @@
 // Methods which interact directly with Consul. Should isolate the
 // code for consul here.
-package main
+package jsonconsul
 
 import (
 	"encoding/json"
