@@ -20,7 +20,7 @@ type JsonSet struct {
 	// The Consul Key to set.
 	Key string
 	// The value that was passed by the command line.
-	value string
+	Value string
 	// What we expect the value type to be.
 	ExpectedType int
 	// The actual Json Value that is going to be saved to Consul.
@@ -110,7 +110,7 @@ func (js *JsonSet) ParseFlags(args []string) {
 	}
 
 	js.Key = leftovers[0]
-	js.value = leftovers[1]
+	js.Value = leftovers[1]
 }
 
 func (js *JsonSet) lintedJson() ([]byte, error) {
@@ -118,9 +118,9 @@ func (js *JsonSet) lintedJson() ([]byte, error) {
 		unmarshalled interface{}
 	)
 
-	err := json.Unmarshal([]byte(js.value), &unmarshalled)
+	err := json.Unmarshal([]byte(js.Value), &unmarshalled)
 	if err != nil {
-		return nil, fmt.Errorf("Can't set the key %s invalid value: %s", js.Key, js.value)
+		return nil, fmt.Errorf("Can't set the key %s invalid value: %s", js.Key, js.Value)
 	}
 
 	err = js.checkExpectedType(unmarshalled)
@@ -128,7 +128,7 @@ func (js *JsonSet) lintedJson() ([]byte, error) {
 		return nil, err
 	}
 
-	return []byte(js.value), nil
+	return []byte(js.Value), nil
 }
 
 func (js *JsonSet) Run() error {
