@@ -25,7 +25,11 @@ release: build test xcompile
 clean:
 	rm -rf bin
 	rm -rf build
+	
+vet:
+	go get golang.org/x/tools/cmd/vet
+	go vet
 
-test: build
+test: build vet
 	go get golang.org/x/tools/cmd/cover
 	go test -cover
