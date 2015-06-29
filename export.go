@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"time"
 )
@@ -21,9 +20,6 @@ type JsonExport struct {
 	Timestamp bool
 	// Should we poll for consul changes.
 	Watch bool
-	// How frequently should we poll the consul server for
-	// changes. This should be in seconds
-	WatchFrequency time.Duration
 	// Should the output include the nodes in the included prefix?
 	IncludePrefix bool
 	// Parse the Values as Json
@@ -41,11 +37,6 @@ func (c *JsonExport) ParseFlags(args []string) {
 	flags.BoolVar(&c.Timestamp, "timestamp", false, "Should I create timestamped values of this")
 	flags.BoolVar(&c.IncludePrefix, "include-prefix", true, "Should I remove the prefix values when exporting?")
 	flags.BoolVar(&c.JsonValues, "json-values", true, "Have the values that are returned by Consul be parsed as json.")
-
-	if c.Watch {
-		frequency := flags.Int("poll-frequency", 60, "How frequently should we poll the consul agent. In seconds")
-		c.WatchFrequency = time.Duration(*frequency)
-	}
 
 	flags.Parse(args)
 
@@ -149,17 +140,4 @@ func (c *JsonExport) Run() error {
 	}
 
 	return nil
-}
-
-func (c *JsonExport) RunWatcher() {
-	for {
-		err := c.Run()
-		if err != nil {
-			log.Println(err)
-			break
-		}
-
-		log.Println("Waiting", time.Second*c.WatchFrequency)
-		<-time.After(time.Second * c.WatchFrequency)
-	}
 }
