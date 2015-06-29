@@ -72,7 +72,7 @@ type Runner struct {
 func NewRunner(config *JsonExport, once bool) (*Runner, error) {
 	var err error
 
-	log.Printf("[INFO] (runner) creating new runner (once: %v)", once)
+	log.Printf("[INFO] (runner) creating new runner (once: %v)\n", once)
 
 	runner := &Runner{
 		config: config,
@@ -95,11 +95,9 @@ func NewRunner(config *JsonExport, once bool) (*Runner, error) {
 // Start creates a new runner and begins watching dependencies and quiescence
 // timers. This is the main event loop and will block until finished.
 func (r *Runner) Start() {
-	var (
-		exitCh <-chan int
-	)
+	var exitCh <-chan int
 
-	log.Printf("[INFO] (runner) starting")
+	log.Println("[INFO] (runner) starting")
 
 	// Add the dependencies to the watcher
 	r.watcher.Add(r.Prefix)
@@ -120,10 +118,10 @@ func (r *Runner) Start() {
 				}
 			}
 		case <-r.minTimer:
-			log.Printf("[INFO] (runner) quiescence minTimer fired")
+			log.Println("[INFO] (runner) quiescence minTimer fired")
 			r.minTimer, r.maxTimer = nil, nil
 		case <-r.maxTimer:
-			log.Printf("[INFO] (runner) quiescence maxTimer fired")
+			log.Println("[INFO] (runner) quiescence maxTimer fired")
 			r.minTimer, r.maxTimer = nil, nil
 		case err := <-r.watcher.ErrCh:
 			// Intentionally do not send the error back up to the runner. Eventually,
@@ -133,14 +131,14 @@ func (r *Runner) Start() {
 			// if err.Contains(Something) {
 			//   errCh <- err
 			// }
-			log.Printf("[ERR] (runner) watcher reported error: %s", err)
+			log.Println("[ERR] (runner) watcher reported error: ", err)
 		case <-r.watcher.FinishCh:
-			log.Printf("[INFO] (runner) watcher reported finish")
+			log.Println("[INFO] (runner) watcher reported finish")
 			return
 		case code := <-exitCh:
 			r.ExitCh <- code
 		case <-r.DoneCh:
-			log.Printf("[INFO] (runner) received finish")
+			log.Println("[INFO] (runner) received finish")
 			return
 		}
 
@@ -152,7 +150,7 @@ func (r *Runner) Start() {
 
 // Stop halts the execution of this runner and its subprocesses.
 func (r *Runner) Stop() {
-	log.Printf("[INFO] (runner) stopping")
+	log.Println("[INFO] (runner) stopping")
 	r.watcher.Stop()
 
 	close(r.DoneCh)
@@ -184,8 +182,7 @@ func (r *Runner) init() error {
 	if err != nil {
 		return err
 	}
-	log.Printf("[DEBUG] (runner) final config (tokens suppressed):\n\n%s\n\n",
-		result)
+	log.Printf("[DEBUG] (runner) final config (tokens suppressed):\n\n%s\n\n", result)
 
 	r.client = client
 
@@ -210,7 +207,7 @@ func (r *Runner) init() error {
 
 // newWatcher creates a new watcher.
 func newWatcher(config *JsonExport, client *api.Client, once bool) (*watch.Watcher, error) {
-	log.Printf("[INFO] (runner) creating Watcher")
+	log.Println("[INFO] (runner) creating Watcher")
 
 	clientSet := dep.NewClientSet()
 	if err := clientSet.Add(client); err != nil {
