@@ -7,6 +7,10 @@ import (
 	"os"
 )
 
+var (
+	Version = "dev"
+)
+
 const (
 	Name  = "jsonconsul"
 	usage = `
@@ -18,6 +22,7 @@ Mode:
   export   Export the keys as a nested JSON file.
   import   Import json file into appropriate KV pairs in Consul.
   set      Set a K/V in Consul to linted JSON value.
+  version  Prints the jsonconsul version
 `
 )
 
@@ -57,6 +62,8 @@ func main() {
 		if err != nil {
 			log.Fatalln(err)
 		}
+	case "version":
+		fmt.Printf("%s %s\n", Name, Version)
 	default:
 		showUsage()
 	}
