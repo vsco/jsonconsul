@@ -26,10 +26,21 @@ func ExampleJsonSet_RunBadExpectedType() {
 	// Invalid type. Value is a bool. Expected number
 }
 
-func TestJsonSet_RunGoodExpectedType(t *testing.T) {
+func TestJsonSet_RunGoodExpectedTypeBool(t *testing.T) {
 	ji := &JsonSet{}
 	ji.ParseFlags([]string{"blah/blah", "true"})
 	ji.setExpectedType("bool")
+	err := ji.Run()
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestJsonSet_RunGoodExpectedTypeString(t *testing.T) {
+	ji := &JsonSet{}
+	ji.ParseFlags([]string{"blah/str", "\"this is a string\""})
+	ji.setExpectedType("string")
 	err := ji.Run()
 
 	if err != nil {
