@@ -124,7 +124,7 @@ func (js *JsonSet) lintedJson() ([]byte, error) {
 
 	err := json.Unmarshal([]byte(js.Value), &unmarshalled)
 	if err != nil {
-		return nil, fmt.Errorf("Can't set the key %s invalid value: %s", js.Key, js.Value)
+		return nil, fmt.Errorf("Can't set the key %s invalid value: %s\nIf it is a string please wrap the value with quotes. Ex. \\\"value\\\"", js.Key, js.Value)
 	}
 
 	err = js.checkExpectedType(unmarshalled)
