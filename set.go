@@ -25,6 +25,8 @@ type JsonSet struct {
 	ExpectedType int
 	// The actual Json Value that is going to be saved to Consul.
 	JsonValue []byte
+	// Is the value going to be json.
+	IsJsonValue bool
 }
 
 func (js *JsonSet) setExpectedType(t string) {
@@ -99,6 +101,8 @@ func (js *JsonSet) ParseFlags(args []string) {
 	flags := flag.NewFlagSet(Name, flag.ContinueOnError)
 
 	expectedType := flags.String("expected-type", "undefined", "What is the expected type for the value? bool, int, float, string, object, array")
+	flags.BoolVar(&js.IsJsonValue, "json-value", true, "Is the value going to be set as json")
+
 	flags.Parse(args)
 
 	js.setExpectedType(*expectedType)
@@ -120,7 +124,7 @@ func (js *JsonSet) lintedJson() ([]byte, error) {
 
 	err := json.Unmarshal([]byte(js.Value), &unmarshalled)
 	if err != nil {
-		return nil, fmt.Errorf("Can't set the key %s invalid value: %s", js.Key, js.Value)
+		return nil, fmt.Errorf("Can't set the key %s invalid value: %s\nIf it is a string please wrap the value with quotes. Ex. \\\"value\\\"", js.Key, js.Value)
 	}
 
 	err = js.checkExpectedType(unmarshalled)
@@ -134,14 +138,21 @@ func (js *JsonSet) lintedJson() ([]byte, error) {
 func (js *JsonSet) Run() error {
 	var (
 		err error
+		val []byte
 	)
 
-	js.JsonValue, err = js.lintedJson()
-	if err != nil {
-		return err
+	if js.IsJsonValue {
+		js.JsonValue, err = js.lintedJson()
+		if err != nil {
+			return err
+		}
+
+		val = js.JsonValue
+	} else {
+		val = []byte(js.Value)
 	}
 
-	err = setConsulKV(js.Key, js.JsonValue)
+	err = setConsulKV(js.Key, val)
 	if err != nil {
 		return err
 	}

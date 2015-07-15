@@ -13,6 +13,7 @@ func ExampleJsonSet_RunBadJson() {
 
 	// Output:
 	// Can't set the key blah/blah invalid value: "a
+	// If it is a string please wrap the value with quotes. Ex. \"value\"
 }
 
 func ExampleJsonSet_RunBadExpectedType() {
